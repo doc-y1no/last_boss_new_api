@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import styles from '../styles/PrefecturesList.module.scss';
 
-type Prefecture = {
+export type Prefecture = {
   prefCode: number;
   prefName: string;
 };
 
 type PrefecturesListProps = {
   onSelectedPrefecturesChange: (selectedPrefectures: number[]) => void;
+  onPrefecturesLoaded?: (prefectures: Prefecture[]) => void;
 };
 
 const PrefectureItem: React.FC<{
@@ -35,6 +36,7 @@ const PrefectureItem: React.FC<{
 
 const PrefecturesList: React.FC<PrefecturesListProps> = ({
   onSelectedPrefecturesChange,
+  onPrefecturesLoaded,
 }) => {
   const [prefectures, setPrefectures] = useState<Prefecture[]>([]);
   const [selectedPrefectures, setSelectedPrefectures] = useState<number[]>([]);
@@ -46,6 +48,7 @@ const PrefecturesList: React.FC<PrefecturesListProps> = ({
         const response = await axios.get<Prefecture[]>('/api/prefectures');
         if (Array.isArray(response.data)) {
           setPrefectures(response.data);
+          onPrefecturesLoaded?.(response.data);
         } else {
           const errData = response.data as { error?: string };
           setError(errData?.error ?? '都道府県一覧の取得に失敗しました。');
@@ -57,7 +60,7 @@ const PrefecturesList: React.FC<PrefecturesListProps> = ({
     };
 
     fetchPrefectures();
-  }, []);
+  }, [onPrefecturesLoaded]);
 
   const handlePrefectureChange = (prefCode: number, isChecked: boolean) => {
     const updatedSelection = isChecked
@@ -73,17 +76,15 @@ const PrefecturesList: React.FC<PrefecturesListProps> = ({
       <h1>都道府県一覧</h1>
       {error ? <p>{error}</p> : null}
       <div className={styles['prefectures-list']}>
-        {prefectures.length > 0 ? (
-          prefectures.map((prefecture) => (
-            <PrefectureItem
-              key={prefecture.prefCode}
-              pref={prefecture}
-              onChange={handlePrefectureChange}
-            />
-          ))
-        ) : (
-          !error && <p>Loading...</p>
-        )}
+        {prefectures.length > 0
+          ? prefectures.map((prefecture) => (
+              <PrefectureItem
+                key={prefecture.prefCode}
+                pref={prefecture}
+                onChange={handlePrefectureChange}
+              />
+            ))
+          : !error && <p>Loading...</p>}
       </div>
     </div>
   );

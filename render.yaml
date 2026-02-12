@@ -1,0 +1,15 @@
+# Render Blueprint（オプション）
+# ダッシュボードで手動作成する場合は不要です
+
+services:
+  - type: web
+    name: last-boss-new-api
+    runtime: node
+    plan: free
+
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+
+    envVars:
+      - key: NODE_VERSION
+        value: 20

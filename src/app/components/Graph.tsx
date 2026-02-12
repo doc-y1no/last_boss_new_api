@@ -28,9 +28,12 @@ type ApiResponse = {
   };
 };
 
+type PrefectureItem = { prefCode: number; prefName: string };
+
 type GraphProps = {
   value: string;
   selectedPrefectures: number[];
+  prefectures?: PrefectureItem[];
 };
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8dd1e1'];
@@ -42,7 +45,11 @@ const formatYAxis = (value: number): string => {
   return value.toLocaleString();
 };
 
-const Graph: React.FC<GraphProps> = ({ value, selectedPrefectures }) => {
+const Graph: React.FC<GraphProps> = ({
+  value,
+  selectedPrefectures,
+  prefectures = [],
+}) => {
   const [data, setData] = useState<PopulationData[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [populationType, setPopulationType] = useState<string>('総人口');
@@ -79,9 +86,7 @@ const Graph: React.FC<GraphProps> = ({ value, selectedPrefectures }) => {
             }
           });
         });
-        setData(
-          Object.values(populationData).sort((a, b) => a.year - b.year)
-        );
+        setData(Object.values(populationData).sort((a, b) => a.year - b.year));
       } catch (error) {
         console.error('Error fetching population data:', error);
         setError('Error fetching population data');
@@ -134,7 +139,10 @@ const Graph: React.FC<GraphProps> = ({ value, selectedPrefectures }) => {
               stroke={COLORS[index % COLORS.length]}
               strokeWidth={2}
               dot={{ r: 3 }}
-              name={`都道府県コード ${prefCode}`}
+              name={
+                prefectures.find((p) => p.prefCode === prefCode)?.prefName ??
+                `都道府県コード ${prefCode}`
+              }
             />
           ))}
         </LineChart>
